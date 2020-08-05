@@ -24,7 +24,7 @@ typedef void _SelectedDayCallback(DateTime day);
 ///   super.dispose();
 /// }
 /// ```
-class CalendarController {
+class CalendarController extends ChangeNotifier {
   /// Currently focused day (used to determine which year/month should be visible).
   DateTime get focusedDay => _focusedDay;
 
@@ -35,9 +35,10 @@ class CalendarController {
   CalendarFormat get calendarFormat => _calendarFormat.value;
 
   /// List of currently visible days.
-  List<DateTime> get visibleDays => calendarFormat == CalendarFormat.month && !_includeInvisibleDays
-      ? _visibleDays.value.where((day) => !_isExtraDay(day)).toList()
-      : _visibleDays.value;
+  List<DateTime> get visibleDays =>
+      calendarFormat == CalendarFormat.month && !_includeInvisibleDays
+          ? _visibleDays.value.where((day) => !_isExtraDay(day)).toList()
+          : _visibleDays.value;
 
   /// `Map` of currently visible events.
   Map<DateTime, List> get visibleEvents {
@@ -218,6 +219,10 @@ class CalendarController {
     if (isProgrammatic && runCallback && _selectedDayCallback != null) {
       _selectedDayCallback(normalizedDate);
     }
+
+    if (isProgrammatic) {
+      notifyListeners();
+    }
   }
 
   /// Sets displayed month/year without changing the currently selected day.
@@ -240,8 +245,9 @@ class CalendarController {
     return formats[id];
   }
 
-  String _getFormatButtonText() =>
-      _useNextCalendarFormat ? _availableCalendarFormats[_nextFormat()] : _availableCalendarFormats[_calendarFormat.value];
+  String _getFormatButtonText() => _useNextCalendarFormat
+      ? _availableCalendarFormats[_nextFormat()]
+      : _availableCalendarFormats[_calendarFormat.value];
 
   void _selectPrevious() {
     if (calendarFormat == CalendarFormat.month) {
@@ -283,7 +289,8 @@ class CalendarController {
       _focusedDay = _previousWeek(_focusedDay);
     } else {
       // in bottom row OR not visible
-      _focusedDay = _previousWeek(_focusedDay.subtract(const Duration(days: 7)));
+      _focusedDay =
+          _previousWeek(_focusedDay.subtract(const Duration(days: 7)));
     }
   }
 
@@ -394,7 +401,9 @@ class CalendarController {
   }
 
   DateTime _lastDayOfMonth(DateTime month) {
-    final date = month.month < 12 ? DateTime.utc(month.year, month.month + 1, 1, 12) : DateTime.utc(month.year + 1, 1, 1, 12);
+    final date = month.month < 12
+        ? DateTime.utc(month.year, month.month + 1, 1, 12)
+        : DateTime.utc(month.year + 1, 1, 1, 12);
     return date.subtract(const Duration(days: 1));
   }
 
@@ -436,11 +445,13 @@ class CalendarController {
   }
 
   DateTime _getEventKey(DateTime day) {
-    return visibleEvents.keys.firstWhere((it) => _isSameDay(it, day), orElse: () => null);
+    return visibleEvents.keys
+        .firstWhere((it) => _isSameDay(it, day), orElse: () => null);
   }
 
   DateTime _getHolidayKey(DateTime day) {
-    return visibleHolidays.keys.firstWhere((it) => _isSameDay(it, day), orElse: () => null);
+    return visibleHolidays.keys
+        .firstWhere((it) => _isSameDay(it, day), orElse: () => null);
   }
 
   /// Returns true if `day` is currently selected.
@@ -454,7 +465,9 @@ class CalendarController {
   }
 
   bool _isSameDay(DateTime dayA, DateTime dayB) {
-    return dayA.year == dayB.year && dayA.month == dayB.month && dayA.day == dayB.day;
+    return dayA.year == dayB.year &&
+        dayA.month == dayB.month &&
+        dayA.day == dayB.day;
   }
 
   bool _isWeekend(DateTime day, List<int> weekendDays) {
